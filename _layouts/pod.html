@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="{{ page.lang | default: site.lang | default: " en" }}">
+
+<head>
+    <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.49.0/mapbox-gl.js'></script>
+    <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.49.0/mapbox-gl.css' rel='stylesheet'/>
+    {% include head.html %}
+</head>
+<body>
+{% include navbar.html %}
+<main class="map" role="main">
+    <div class="container">
+        {% include pod_map.html %}
+    </div>
+</main>
+<section class="hero is-primary is-small">
+    <div class="hero-body">
+        <div class="container has-text-centered">
+            <h3 class="title is-3">
+                See Something Missing?
+            </h3>
+            <p>To add more resources to these lists, please submit them here.</p>
+            <p><a class="button is-light" href="https://github.com/hurricane-response/michael_website">GitHub repo</a>
+            </p>
+        </div>
+    </div>
+</section>
+<footer class="footer " role="contentinfo">
+    <div class="container has-text-centered">
+        <h3 class="title is-3">What is this?</h3>
+        <p>This site is built by <a class="has-text-link" href="https://codeforamerica.org">Code for America</a>
+            brigades from across the
+            country.
+            To participate in data collection, curation, or any other help, please join us - <a class="has-text-link"
+                                                                                                href="https://bit.ly/2N6YVYD">C4A
+                Michael Volunteers</a>.
+        </p>
+        <img alt="CEDR Dital Corp logo" src="{{site.baseurl}}/assets/images/CEDR_logo.jpg" width="163"/>
+        <div class="partners columns">
+            <p class="column has-text-centered">Thank you to the <a href="https://mapbox.com" target="_blank">Mapbox</a>
+                team for
+                collaborating on mapping tools.<br/>
+                <img src="{{site.baseurl}}/assets/images/mapbox_logo.png">
+            </p>
+            <p class="column has-text-centered">Thank you to the <a href="https://cedrdigitalcorps.org/"
+                                                                    target="_blank">CEDR Digital Corps</a> for
+                collaborating on data collection.<br/>
+                <img src="{{site.baseurl}}/assets/images/CEDR_logo.jpg" width="163"/>
+            </p>
+
+        </div>
+    </div>
+</footer>
+</body>
