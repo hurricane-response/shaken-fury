@@ -122,7 +122,15 @@ map.on('load', function() {
             "circle-stroke-color": "#fff"
         }
     });
-
+var navControl = new mapboxgl.NavigationControl();
+    map.addControl(navControl, 'bottom-right');
+    map.addControl(new mapboxgl.GeolocateControl({
+        className: 'control-geolocate',
+        positionOptions: {
+            enableHighAccuracy: true
+        },
+        trackUserLocation: true
+    }));
     
 });
 
