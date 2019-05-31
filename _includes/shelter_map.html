@@ -34,7 +34,7 @@
                 Shelter
             </div>
             <div class="legend-item_key">
-                <img src="/assets/images/shelter-icon.png" alt="Shelter Icon">
+                <img src="{{site.baseurl}}/assets/images/shelter-icon.png" alt="Shelter Icon">
             </div>
         </li>
     </ul>
@@ -47,21 +47,20 @@
     const MAP_LOAD_CENTER = [-84.84329, 37.7623];
 
     var map = new mapboxgl.Map({
-  // container id specified in the HTML
-  container: 'map',
-  // style URL
-  style: 'mapbox://styles/miklb-c4tb/cjnozdzs41qlx2rqvf7mwfztt',
-  // initial position in [lon, lat] format
-  center: MAP_LOAD_CENTER,
-  // initial zoom
-  zoom: 7.3
-});
+        // container id specified in the HTML
+        container: 'map',
+        // style URL
+        style: 'mapbox://styles/miklb-c4tb/cjnozdzs41qlx2rqvf7mwfztt',
+        // initial position in [lon, lat] format
+        center: MAP_LOAD_CENTER,
+        // initial zoom
+        zoom: 7.3
+    });
 map.on('load', function() {
     // Add a new source from our GeoJSON data and set the
     // 'cluster' option to true. GL-JS will add the point_count property to your source data.
     map.addSource("shelters", {
         type: "geojson",
-        
         data: "https://hurricane-florence-api.herokuapp.com/api/v1/shelters/geo.json",
         cluster: true,
         clusterMaxZoom: 11, // Max zoom to cluster points on
@@ -110,19 +109,19 @@ map.on('load', function() {
             "text-size": 12
         }
     });
-    map.addLayer({
-        id: "unclustered-point",
-        type: "circle",
-        source: "shelters",
-        filter: ["!", ["has", "point_count"]],
-        paint: {
-            "circle-color": "#11b4da",
-            "circle-radius": 4,
-            "circle-stroke-width": 1,
-            "circle-stroke-color": "#fff"
-        }
+    map.loadImage("{{site.baseurl}}/assets/images/shelter-icon.png", (error, img) => {
+        map.addImage("shelter", img);
+        map.addLayer({
+            id: "unclustered-point",
+            type: "symbol",
+            source: "shelters",
+            filter: ["!", ["has", "point_count"]],
+            layout: {
+                "icon-image": "shelter"
+            }
+        });
     });
-var navControl = new mapboxgl.NavigationControl();
+    var navControl = new mapboxgl.NavigationControl();
     map.addControl(navControl, 'bottom-right');
     map.addControl(new mapboxgl.GeolocateControl({
         className: 'control-geolocate',
@@ -131,7 +130,6 @@ var navControl = new mapboxgl.NavigationControl();
         },
         trackUserLocation: true
     }));
-    
 });
 
 </script>
