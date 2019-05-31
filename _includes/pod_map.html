@@ -2,7 +2,21 @@
     <div id="map">
     </div>
     <div class="shelter-map_info">
-        
+        <div class="map-controls">
+            <!-- button id="ShelterFilterToggle" class="button is-info is-small" onclick="toggleFiltersVisibility();">
+                <svg id="icon-filter" viewBox="0 0 32 32" aria-label="filter icon">
+                    <path d="M16 0c-8.837 0-16 2.239-16 5v3l12 12v10c0 1.105 1.791 2 4 2s4-0.895 4-2v-10l12-12v-3c0-2.761-7.163-5-16-5zM2.95 4.338c0.748-0.427 1.799-0.832 3.040-1.171 2.748-0.752 6.303-1.167 10.011-1.167s7.262 0.414 10.011 1.167c1.241 0.34 2.292 0.745 3.040 1.171 0.494 0.281 0.76 0.519 0.884 0.662-0.124 0.142-0.391 0.38-0.884 0.662-0.748 0.427-1.8 0.832-3.040 1.171-2.748 0.752-6.303 1.167-10.011 1.167s-7.262-0.414-10.011-1.167c-1.24-0.34-2.292-0.745-3.040-1.171-0.494-0.282-0.76-0.519-0.884-0.662 0.124-0.142 0.391-0.38 0.884-0.662z"></path>
+                </svg>
+                Filters</button -->
+        </div>
+        <ul id="ShelterFiltersUL" class="filters tabs">
+            <li class="filter-item" id="ShelterFilter_All" onclick="clearFilters()">All</li>
+            <li class="filter-item" id="ShelterFilter_Accepting" onclick="onFilterClick(this.id)">Accepting</li>
+            <li class="filter-item" id="ShelterFilter_SpecialNeeds" onclick="onFilterClick(this.id)">Special Needs</li>
+            <li class="filter-item" id="ShelterFilter_PetsOK" onclick="onFilterClick(this.id)">Pets allowed</li>
+            <!--<li class="filter-item" id="ShelterFilter_SuppliesNeeded" onclick="onFilterClick(this.id)">Supplies Needed</li>-->
+            <!--<li class="filter-item" id="ShelterFilter_VolunteersNeeded" onclick="onFilterClick(this.id)">Volunteers Needed</li>-->
+        </ul>
     </div>
 </div>
 <div id="ShelterMapLegend">
@@ -17,7 +31,7 @@
         </li>
         <li class="legend-item">
             <div class="legend-item_label">
-                Point of Distribution
+                Shelter
             </div>
             <div class="legend-item_key">
                 <img src="{{site.baseurl}}/assets/images/shelter-icon.png" alt="Shelter Icon">
@@ -26,65 +40,202 @@
     </ul>
 </div>
 <script>
-    let markers = [];
+    // Load access token from config
     mapboxgl.accessToken = '{{site.mapbox_access_token}}';
-    var map = new mapboxgl.Map({
-        container: 'map',
-        style: 'mapbox://styles/sbma44/cjm0qon9e7u8l2sqliotzrlmi',
-        center: [-84.7, 29.7258],
-        zoom: 7.1
-    });
-    var oReq = new XMLHttpRequest();
-    oReq.onload = function (e) {
-        if (!(e && e.target && e.target.response && e.target.response.distribution_points)) {
-            return console.log('error fetching shelter JSON');
-        }
-        const distributionPoints = e.target.response.distribution_points;
-        renderMarkersByTitle({data: distributionPoints, map: map});
-    };
-    oReq.open('GET', 'https://hurricane-florence-api.herokuapp.com/api/v1/distribution_points', true);
-    oReq.responseType = 'json';
-    oReq.send();
 
+    //TODO: move this to config.
+    const MAP_LOAD_CENTER = [-84.84329, 37.7623];
+
+    var map = new mapboxgl.Map({
+        // container id specified in the HTML
+        container: 'map',
+        // style URL
+        style: 'mapbox://styles/miklb-c4tb/cjnozdzs41qlx2rqvf7mwfztt',
+        // initial position in [lon, lat] format
+        center: MAP_LOAD_CENTER,
+        // initial zoom
+        zoom: 7.3
+    });
+map.on('load', function() {
+    // Add a new source from our GeoJSON data and set the
+    // 'cluster' option to true. GL-JS will add the point_count property to your source data.
+    map.addSource("pods", {
+        type: "geojson",
+        data: "https://hurricane-florence-api.herokuapp.com/api/v1/distribution_points/geo.json",
+        cluster: true,
+        clusterMaxZoom: 11, // Max zoom to cluster points on
+        clusterRadius: 50 // Radius of each cluster when clustering points (defaults to 50)
+    });
+
+    map.addLayer({
+        id: "clusters",
+        type: "circle",
+        source: "pods",
+        filter: ["has", "point_count"],
+        paint: {
+            // Use step expressions (https://www.mapbox.com/mapbox-gl-js/style-spec/#expressions-step)
+            // with three steps to implement three types of circles:
+            //   * Blue, 20px circles when point count is less than 10
+            //   * Yellow, 30px circles when point count is between 10 and 20
+            //   * Pink, 40px circles when point count is greater than or equal to 20
+            "circle-color": [
+                "step",
+                ["get", "point_count"],
+                "#19B5FE",
+                10,
+                "#F4D03F",
+                20,
+                "#FF65AA"
+            ],
+            "circle-radius": [
+                "step",
+                ["get", "point_count"],
+                20,
+                10,
+                30,
+                20,
+                40
+            ]
+        }
+    });
+    map.addLayer({
+        id: "cluster-count",
+        type: "symbol",
+        source: "pods",
+        filter: ["has", "point_count"],
+        layout: {
+            "text-field": "{point_count_abbreviated}",
+            "text-font": ["DIN Offc Pro Medium", "Arial Unicode MS Bold"],
+            "text-size": 12
+        }
+    });
+    map.loadImage("{{site.baseurl}}/assets/images/shelter-icon.png", (error, img) => {
+        map.addImage("shelter", img);
+        map.addLayer({
+            id: "unclustered-point",
+            type: "symbol",
+            source: "pods",
+            filter: ["!", ["has", "point_count"]],
+            layout: {
+                "icon-image": "shelter"
+            }
+        });
+        map.on('click', 'unclustered-point', (ev) => {
+            const coords = ev.features[0].geometry.coordinates.slice();
+            const props = ev.features[0].properties;
+            const popup = new mapboxgl.Popup({
+                offset: 25,
+                className: 'shelter-popup'
+            }).setHTML(popupTemplate(props));
+            popup.setLngLat(coords).addTo(map);
+        });
+        // Change the cursor to a pointer when the mouse is over the unclustered-point layer.
+        map.on('mouseenter', 'unclustered-point', function () {
+            map.getCanvas().style.cursor = 'pointer';
+        });
+        
+        // Change it back to a pointer when it leaves.
+        map.on('mouseleave', 'unclustered-point', function () {
+            map.getCanvas().style.cursor = '';
+        });
+
+    });
     var navControl = new mapboxgl.NavigationControl();
     map.addControl(navControl, 'bottom-right');
     map.addControl(new mapboxgl.GeolocateControl({
         className: 'control-geolocate',
         positionOptions: {
-           enableHighAccuracy: true
+            enableHighAccuracy: true
         },
         trackUserLocation: true
     }));
+});
 
     /**
-     * Renders two types of markers to the map based on if the facility_name contains an certain emoji.
+     * https://github.com/hurricane-response/florence-api/issues/53
      *
-     * @param opts
+     * Checks if address has "," to signify that it contains more than just the street number.
+     *
+     * @param shelter
+     * @returns {boolean}
      */
-    function renderMarkersByTitle(opts) {
-        for (let markerData of opts.data) {
-            const markerElRef = document.createElement('div');
-            const titleTest = markerData.facility_name;
-            if (titleTest.match('🍲')) {
-                markerElRef.style.backgroundImage = 'url("/assets/images/meal-icon-white.png")';
-            }
-            markerElRef.className = 'marker';
-            const popup = new mapboxgl.Popup({
-                offset: 25,
-                className: 'pod-popup'
-            })
-                .setHTML(popupTemplate(markerData));
-            const marker = new mapboxgl.Marker(markerElRef)
-                .setLngLat([markerData.longitude, markerData.latitude])
-                .setPopup(popup)
-                .addTo(opts.map);
-            markers = [
-                ...markers,
-                marker
-            ];
-       }
-   }
+    function isFullAddress(shelter) {
+        if (!shelter.address){
+            return false;
+        }
+        return shelter.address.split(',').length > 1;
+    }
 
+    /**
+     * Verifies there is a phone number received that is not "0000000000"
+     *
+     * @param shelter
+     * @returns {boolean}
+     */
+    function isPhone(shelter) {
+        let phone = shelter.cleanPhone.trim();
+        if (((/[^\d]/.test(phone)) || (phone.replace(/0+/g, '').length === 0)) && shelter.phone) {
+            phone = shelter.phone.replace(/[^\d]/g, '');
+        }
+        return phone.replace(/[\-\+\(\)\s0]+/g, '').length !== 0;
+    }
+
+    /**
+     * https://github.com/hurricane-response/florence-api/issues/53
+     *
+     * Joins the different address segments into a string,
+     * if state has no value it will just join the zipcode after the city
+     *
+     * @param shelter
+     * @returns {string}
+     */
+    function shelterAddressToString(shelter) {
+        return [
+            shelter.address,
+            shelter.city,
+            shelter.state
+            + ' '
+            + shelter.zip
+        ].join(', ');
+    }
+
+    /**
+     * Replaces URLs in a string with anchor elements
+     *
+     * @param content {string}
+     * @returns {string}
+     */
+    function urlsToAnchors(content) {
+        if (!content) {
+            return void 0;
+        }
+        const urlMatchPattern = /(?:(?:https?):\/\/|www\.)(?:\([-A-Z0-9+&@#\/%=~_|$?!:,.]*\)|[-A-Z0-9+&@#\/%=~_|$?!:,.])*(?:\([-A-Z0-9+&@#\/%=~_|$?!:,.]*\)|[A-Z0-9+&@#\/%=~_|$])/igm;
+        const urls = content.match(urlMatchPattern);
+        if (!urls){
+            return content;
+        }
+        urls.forEach(url => {
+            content = content.replace(url, transformToAnchor(url));
+        });
+        return content;
+    }
+
+    /**
+     * Replaces url with an html anchor
+     *
+     * @param url
+     * @returns {string}
+     */
+    function transformToAnchor(url) {
+        return `<a role="link" href="${url}" target="_blank">${url}</a>`
+    }
+
+    /**
+     * Builds a HTML template (Popup) from a pod object.
+     *
+     * @params pod
+     * @returns {string}
+     */
     function popupTemplate(pod) {
         const address = `
             <div class="address">
