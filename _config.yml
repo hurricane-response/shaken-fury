@@ -13,12 +13,12 @@
 # you will see them accessed via {{ site.title }}, {{ site.email }}, and so on.
 # You can create any custom variable you would like, and they will be accessible
 # in the templates via {{ site.myvariable }}.
-title: DRILL Shaken Fury DRILL
+title: 🚨 DRILL Shaken Fury DRILL 🚨
 email: info@codeforamerica.org
 description: >- #m this means to ignore newlines until "baseurl:"
   Code for America Shaken Fury 2019 Drill Hub
 baseurl: "/shaken-fury" # the subpath of your site, e.g. /blog
-url: "drill.hurricane-response.org" # the base hostname & protocol for your site, e.g. http://example.com
+# url: "drill.hurricane-response.org" # the base hostname & protocol for your site, e.g. http://example.com
 
 
 permalink: pretty
@@ -27,9 +27,7 @@ permalink: pretty
 
 repository: hurricane-response/shaken-fury
 
-collections:
-  states:
-    output: true
+remote_theme:  hurricane-response/response-theme
 
 logo: assets/images/og_img.jpg
 
@@ -47,7 +45,9 @@ mapbox_access_token: pk.eyJ1IjoibWlrbGItYzR0YiIsImEiOiJjam5kOGg3c2kwMDB3M3dwYXQy
 markdown: kramdown
 # theme: minima
 plugins:
-- jekyll-seo-tag
+  - jekyll-seo-tag
+  - jekyll-remote-theme
+  - jekyll-include-cache
 
 # Exclude from processing.
 # The following items will not be processed, by default. Create a custom list
