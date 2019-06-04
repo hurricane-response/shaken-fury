@@ -4,7 +4,7 @@ title: Contact
 permalink: /contact/
 ---
 
-### Contact the Hurricane Michael Response Team.
+### Contact the Response Team for {{site.title}}
 
 <p class="subtitle">If this is an emergency please call <a href="tel:911">☎️ 9-1-1</a> at once.
 
