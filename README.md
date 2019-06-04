@@ -34,6 +34,10 @@ See our [open issues](https://github.com/hurricane-response/michael_website/issu
 
 Our [getting started](https://bit.ly/2N6YVYD) document serves as the best entry for the project for all types of contributions.
 
+## Change Log
+
+    * added basic search
+
 ## Open source licensing info
 1. [LICENSE](LICENSE)
 2. [Code of Conduct](Code_of_Conduct.md)
