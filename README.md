@@ -37,6 +37,7 @@ Our [getting started](https://bit.ly/2N6YVYD) document serves as the best entry 
 ## Change Log
 
     * added basic search
+    * bump
 
 ## Open source licensing info
 1. [LICENSE](LICENSE)
