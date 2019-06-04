@@ -37,7 +37,7 @@ Our [getting started](https://bit.ly/2N6YVYD) document serves as the best entry 
 ## Change Log
 
     * added basic search
-    * bump
+    * bump with proper fix for baseurl
 
 ## Open source licensing info
 1. [LICENSE](LICENSE)
